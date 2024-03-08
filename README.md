@@ -1,4 +1,4 @@
-# cmakedoc
+# CMakeDoc
 Utility to add doxygen and spell checker into a cmake project.
 
 #### Requirements
@@ -7,7 +7,7 @@ Utility to add doxygen and spell checker into a cmake project.
 * graphviz
 
 ### add_doxygen(${PROJECT_NAME})
-Adds Doxygen in the project, the documenation appears in ${CMAKE_BINARY_DIR}/html.
+Adds Doxygen in the project. Doxygen documentation will be in the documenation appears in ${CMAKE_BINARY_DIR}/html.
 #### variables
 * CMAKEDOC_DOXYGEN_DOCUMENTS
     * List files to document.
@@ -15,14 +15,14 @@ Adds Doxygen in the project, the documenation appears in ${CMAKE_BINARY_DIR}/htm
     * [See e.g.](https://r2devops.io/marketplace/gitlab/r2devops/hub/doxygen)
 
 ### add_spellcheck(${PROJECT_NAME})
-Adds spellcheker in the project. Gerates a 'aspell/spell_words.txt' in the project directory to add a project spesific words. Spelling error is a build error. 
+Adds spellcheker in the project. Gerates a 'aspell/spell_words.txt' in the project directory to add a project spesific words. Spelling error is a build error. If there is an error you either fix spelling or add the word in the aspell/spell_words.txt file.
 #### variables 
 * CMAKEDOC_SPELL_EXCLUDE_FILES
     * Files to exclude.
 * CMAKEDOC_SPELL_EXCLUDE_DIRS
     * Directories to exclude.
 
-## example
+## Example
 
 ```
 # Include Fetch content to retrieve repos on configuration time.

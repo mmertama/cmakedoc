@@ -34,7 +34,7 @@ function (add_doxygen MAIN_TARGET)
     set(ENABLE_PREPROCESSING TRUE)
 
     if(NOT DEFINED DOXYGEN_FILE_PATTERNS)
-        set(DOXYGEN_FILE_PATTERNS           *.c *.cc *.cxx *.cpp *.c++ *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp *.h++ *.inc *.md)
+        set(DOXYGEN_FILE_PATTERNS           *.c *.cc *.cxx *.cpp *.c++ *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp *.h++ *.inc *.md *.txt)
     endif()
 
     #set(DOXYGEN_WARN_NO_PARAMDOC        YES)
