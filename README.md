@@ -28,7 +28,8 @@ when looking for fengine
 
 Which tells the mispelled word and it's location. If there is an error you either fix spelling or add the word in the aspell/spell_words.txt file. 
 
-
+The spellcheck is done only againts doxygen documentation, but the used (misspelled) words are searched from the source folder. Hence the CMAKEDOC_SPELL_EXCLUDE_FILES and CMAKEDOC_SPELL_EXCLUDE_DIRS only affects to where misspelled words are looked for, not what files are actually
+processed.
 
 #### variables 
 * CMAKEDOC_SPELL_EXCLUDE_FILES
@@ -76,7 +77,7 @@ if(LINUX AND NOT NO_DOC)
 
 # Excude folders you do not want to be spellchecked     
 
-    set(CMAKEDOC_EXCLUDE_DIRS
+    set(CMAKEDOC_SPELL_EXCLUDE_DIRS
         build
         aspell
         modules

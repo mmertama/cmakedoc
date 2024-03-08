@@ -34,7 +34,7 @@ function (add_doxygen MAIN_TARGET)
     set(ENABLE_PREPROCESSING TRUE)
 
     if(NOT DEFINED DOXYGEN_FILE_PATTERNS)
-        set(DOXYGEN_FILE_PATTERNS           *.c *.cc *.cxx *.cpp *.c++ *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp *.h++ *.inc *.md)
+        set(DOXYGEN_FILE_PATTERNS           *.c *.cc *.cxx *.cpp *.c++ *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp *.h++ *.inc *.md *.txt)
     endif()
 
     #set(DOXYGEN_WARN_NO_PARAMDOC        YES)
@@ -62,7 +62,7 @@ function (add_doxygen MAIN_TARGET)
     else()
         doxygen_add_docs(DOXY_TARGET
             ${CMAKE_SOURCE_DIR}/README.md
-            ${CMAKE_CURRENT_SOURCE_DIR}/.})
+            ${CMAKE_CURRENT_SOURCE_DIR}/.)
     endif()
 
     if(NOT TARGET doxy)
@@ -76,57 +76,107 @@ function (add_doxygen MAIN_TARGET)
         add_dependencies(doxy_spell doxy_docs)
     endif()
 
-    ## this is some Nonja spesific nonsense I figured out this workaround
-    ## Can be bug in the version Im using, nevertheless its was annoying as Ninja wont find doxy_docs target without this
-    ## It also can be some Qt related stuff...
-    #if(CMAKE_GENERATOR STREQUAL "Ninja")
-    #    add_custom_command(TARGET ${MAIN_TARGET} POST_BUILD
-    #        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target CMakeFiles/doxy_docs
-    #        VERBATIM
-    #    )
-    #else()
-    # alternative to that hack is to generate a dummy target!
     add_dependencies(${MAIN_TARGET} doxy)
-    #endif()
-
 
 endfunction()
 
 function (add_spellcheck MAIN_TARGET)
+    
+    set(SPELL_EXCLUDE_DIRS 
+        aspell
+        .git
+    )
+    set(SPELL_EXCLUDE_FILES 
+        doxygen.cmake
+        graph_legend.html
+        jquery.js
+        \*.png
+        \*.ttf
+        \*.svg
+        \*.jpg
+    )
 
-    set(SPELL_EXCLUDE " --exclude=doxygen.cmake --exclude-dir=aspell --exclude=graph_legend.html  --exclude=\*.png --exclude=\*.ttf --exclude=\*.svg ")
-    foreach(FE ${CMAKEDOC_SPELL_EXCLUDE_DIRS})
-        set(SPELL_EXCLUDE "${SPELL_EXCLUDE} --exclude-dir=${FE} ")
+    set(SPELL_EXCLUDE_FILES_INTERNAL 
+        doxygen.cmake
+        graph_legend.html
+        \*.png
+        \*.ttf
+        \*.svg
+        \*.jpg
+        \*.js
+    )
+
+    
+    foreach(DE ${SPELL_EXCLUDE_DIRS})
+        set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude-dir=${DE} ")
     endforeach()
+    
+    foreach(FE ${SPELL_EXCLUDE_FILES})
+        set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude-dir=${FE} ")
+    endforeach()
+    
+    foreach(DE ${CMAKEDOC_SPELL_EXCLUDE_DIRS})
+        set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude-dir=${DE} ")
+    endforeach()
+    
     foreach(FE ${CMAKEDOC_SPELL_EXCLUDE_FILES})
-        set(SPELL_EXCLUDE "${SPELL_EXCLUDE} --exclude=${FE} ")
+        set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude=${FE} ")
     endforeach()
-    set(DICTIONARY "${CMAKE_SOURCE_DIR}/aspell/spell_words.txt")
-    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/aspell)
-    if(NOT EXISTS ${DICTIONARY} )
-        file(WRITE ${DICTIONARY}  "personal_ws-1.1 en 84 utf-8\nforwhich\nPrivateBase\nProtectedBase\nPublicBase\nTempl\nusedClass")
+
+    foreach(FE ${SPELL_EXCLUDE_FILES_INTERNAL})
+        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -name '${FE}' ")
+    endforeach()
+
+    if(FALSE) # todo in later versions if there is need to look beyond doxygendocs
+
+    foreach(DE ${SPELL_EXCLUDE_DIRS})
+        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -path '*/${DE}/*' ")
+    endforeach()
+
+    foreach(FE ${SPELL_EXCLUDE_FILES})
+        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -name '${FE}' ")
+    endforeach()
+    
+    foreach(DE ${CMAKEDOC_SPELL_EXCLUDE_DIRS})
+        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -path '*/${DE}/*' ")
+    endforeach()
+
+    foreach(FE ${CMAKEDOC_SPELL_EXCLUDE_FILES})
+        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -name '${FE}' ")
+    endforeach()
     endif()
-    set(DICT "${CMAKE_SOURCE_DIR}/aspell/dict.txt")
-    set(REPL "${CMAKE_SOURCE_DIR}/aspell/repl.txt")
-    # if spellchecker lists any words, either fix that or add into ${DICTIONARY}
-    set(SPELL_CMD "find . -type f -name '*.html' -exec cat {} \; | ${SPELL} list -H -p ${DICTIONARY} | sort | uniq | while read -r word; do grep -r ${SPELL_EXCLUDE} -n -m 1  \"\$word\" ${CMAKE_SOURCE_DIR}; echo \"when looking for $word\"; done")
+
+    set(SPELL_FILE_TYPE '*.html')
+    
+    set(CMAKEDOC_SPELL_WORKING_FOLDER "${CMAKE_BINARY_DIR}/html")
+    set(CMAKEDOC_SPELL_DICTIONARY_FOLDER "${CMAKE_SOURCE_DIR}/aspell")
+    set(CMAKEDOC_SPELL_DICTIONARY_FILE "${CMAKEDOC_SPELL_DICTIONARY_FOLDER}/spell_words.txt")
+    file(MAKE_DIRECTORY ${CMAKEDOC_SPELL_DICTIONARY_FOLDER})
+    if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY_FILE} )
+        file(WRITE ${CMAKEDOC_SPELL_DICTIONARY_FILE}  "personal_ws-1.1 en 84 utf-8\nforwhich\nPrivateBase\nProtectedBase\nPublicBase\nTempl\nusedClass")
+    endif()
+    # if spellchecker lists any words, either fix that or add into ${CMAKEDOC_SPELL_DICTIONARY_FILE}
+    set(SPELL_CMD "find . -type f -name ${SPELL_FILE_TYPE} ${FIND_SPELL_EXCLUDE} -exec cat {} \; | ${SPELL} list -H -p ${CMAKEDOC_SPELL_DICTIONARY_FILE} | sort | uniq | while read -r word; do grep -r ${GREP_SPELL_EXCLUDE} -n -m 1  \"\$word\" ${CMAKE_SOURCE_DIR}; echo \"when looking for $word\"; done")
     set(SPELL_CMD_TEST_0 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then echo Spelling errors:; fi")
     set(SPELL_CMD_TEST_1 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then exit 1; fi")
-    add_custom_target(doxy_spell
+    
+    add_custom_target(doxy_spell_bin
         COMMAND bash -c "${SPELL_CMD_TEST_0}"
         COMMAND bash -c "${SPELL_CMD}"
         COMMAND bash -c "${SPELL_CMD_TEST_1}"
         COMMAND echo ""
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/html"
+        WORKING_DIRECTORY "${CMAKEDOC_SPELL_WORKING_FOLDER}"
         VERBATIM
     )
+
+
     if(NOT TARGET doxy)
          add_custom_target(doxy)
     endif()
-    add_dependencies(doxy doxy_spell)
+    add_dependencies(doxy doxy_spell_bin)
 
     if(TARGET doxy_docs)
-        add_dependencies(doxy_spell doxy_docs)
+        add_dependencies(doxy_spell_bin doxy_docs)
     endif()
 
 endfunction()
