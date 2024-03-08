@@ -54,11 +54,11 @@ function (add_doxygen MAIN_TARGET)
 
     file(MAKE_DIRECTORY ${DOXYGEN_HTML_OUTPUT})
 
-    if(DEFINED DOCUMENTATION_DOXYGEN_DOCUMENTS)
+    if(DEFINED CMAKEDOC_DOXYGEN_DOCUMENTS)
         doxygen_add_docs(doxy_docs
             USE_STAMP_FILE
             ${CMAKE_SOURCE_DIR}/README.md
-            ${DOCUMENTATION_DOXYGEN_DOCUMENTS})
+            ${CMAKEDOC_DOXYGEN_DOCUMENTS})
     else()
         doxygen_add_docs(DOXY_TARGET
             ${CMAKE_SOURCE_DIR}/README.md
@@ -95,10 +95,10 @@ endfunction()
 function (add_spellcheck MAIN_TARGET)
 
     set(SPELL_EXCLUDE " --exclude=doxygen.cmake --exclude-dir=aspell --exclude=graph_legend.html  --exclude=\*.png --exclude=\*.ttf --exclude=\*.svg ")
-    foreach(FE ${DOCUMENTATION_SPELL_EXCLUDE_DIRS})
+    foreach(FE ${CMAKEDOC_SPELL_EXCLUDE_DIRS})
         set(SPELL_EXCLUDE "${SPELL_EXCLUDE} --exclude-dir=${FE} ")
     endforeach()
-    foreach(FE ${DOCUMENTATION_SPELL_EXCLUDE_FILES})
+    foreach(FE ${CMAKEDOC_SPELL_EXCLUDE_FILES})
         set(SPELL_EXCLUDE "${SPELL_EXCLUDE} --exclude=${FE} ")
     endforeach()
     set(DICTIONARY "${CMAKE_SOURCE_DIR}/aspell/spell_words.txt")
