@@ -15,7 +15,21 @@ Adds Doxygen in the project. Doxygen documentation will be in the documenation a
     * [See e.g.](https://r2devops.io/marketplace/gitlab/r2devops/hub/doxygen)
 
 ### add_spellcheck(${PROJECT_NAME})
-Adds spellcheker in the project. Gerates a 'aspell/spell_words.txt' in the project directory to add a project spesific words. Spelling error is a build error. If there is an error you either fix spelling or add the word in the aspell/spell_words.txt file.
+Adds spellcheker in the project. The add_doxygen generated files are spellchecked. Gerates a 'aspell/spell_words.txt' in the project directory to add a project spesific words. Spelling error is a build error. 
+
+On error the build error looks like 
+
+```
+Spelling errors:
+/home/markus/Development/FigmaQML/app_figma/FigmaQmlInterface/FigmaQmlInterface.hpp:26:     * @brief Static to fetch this instance from fengine
+when looking for fengine
+
+```
+
+Which tells the mispelled word and it's location. If there is an error you either fix spelling or add the word in the aspell/spell_words.txt file. 
+
+
+
 #### variables 
 * CMAKEDOC_SPELL_EXCLUDE_FILES
     * Files to exclude.
