@@ -72,7 +72,11 @@ if(LINUX AND NOT NO_DOC)
 # Add Doxygen documents in the project
     
     add_doxygen(${PROJECT_NAME})
-    set(CMAKEDOC_DOXYGEN_DOCUMENTS
+
+
+# Excude folders you do not want to be spellchecked     
+
+    set(CMAKEDOC_EXCLUDE_DIRS
         build
         aspell
         modules
