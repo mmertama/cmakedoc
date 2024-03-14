@@ -60,7 +60,7 @@ function (add_doxygen MAIN_TARGET)
             ${CMAKE_SOURCE_DIR}/README.md
             ${CMAKEDOC_DOXYGEN_DOCUMENTS})
     else()
-        doxygen_add_docs(DOXY_TARGET
+        doxygen_add_docs(doxy_docs
             ${CMAKE_SOURCE_DIR}/README.md
             ${CMAKE_CURRENT_SOURCE_DIR}/.)
     endif()
