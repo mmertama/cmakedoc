@@ -1,7 +1,7 @@
 
 set(CMAKEDOC_HOME ${CMAKE_CURRENT_LIST_DIR})
 
-function (add_doxygen MAIN_TARGET)
+function (add_doxygen)
 
     find_program(DOCX_APP doxygen)
     if(NOT DOCX_APP)
@@ -18,6 +18,10 @@ function (add_doxygen MAIN_TARGET)
         message(FATAL_ERROR "aspell for doxygen is not found - try apt-get install aspell")
     endif()
 
+    if(NOT TARGET ${CMAKEDOC_TARGET})
+        set(CMAKEDOC_TARGET ${PROJECT_NAME})
+    endif()
+
 
     find_package(Doxygen REQUIRED dot)
     set(DOXYGEN_EXTRACT_ALL FALSE)
@@ -31,7 +35,7 @@ function (add_doxygen MAIN_TARGET)
 
     set(DOXYGEN_GENERATE_TREEVIEW YES)
     if(NOT DEFINED DOXYGEN_PROJECT_NAME)
-        set(DOXYGEN_PROJECT_NAME ${MAIN_TARGET})
+        set(DOXYGEN_PROJECT_NAME ${CMAKEDOC_TARGET})
     endif()
     set(DOXYGEN_MARKDOWN_SUPPORT YES)
     set(ENABLE_PREPROCESSING TRUE)
@@ -79,11 +83,15 @@ function (add_doxygen MAIN_TARGET)
         add_dependencies(doxy_spell doxy_docs)
     endif()
 
-    add_dependencies(${MAIN_TARGET} doxy)
+    if(NOT TARGET ${CMAKEDOC_TARGET})
+        message(FATAL_ERROR "Target not found ${CMAKEDOC_TARGET}")
+    endif()  
+
+    add_dependencies(${CMAKEDOC_TARGET} doxy)  
 
 endfunction()
 
-function (add_spellcheck MAIN_TARGET)
+function (add_spellcheck)
 
     if(NOT DEFINED CMAKEDOC_SPELL_DICTIONARY)
         message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY ${CMAKEDOC_SPELL_DICTIONARY} file is not defined! - please define!")
@@ -150,9 +158,10 @@ function (add_spellcheck MAIN_TARGET)
     set(SPELL_DICTIONARY_FILE "${SPELL_DICTIONARY_FOLDER}/spell_words.txt")
     file(MAKE_DIRECTORY ${SPELL_DICTIONARY_FOLDER})
 
-    if(NOT EXISTS ${SPELL_DICTIONARY_FILE} )
-        configure_file(${CMAKEDOC_HOME}/spell_words.txt.in ${SPELL_DICTIONARY_FILE} COPYONLY)
-    endif()
+    # do
+    #if(NOT EXISTS ${SPELL_DICTIONARY_FILE} )
+    #    configure_file(${CMAKEDOC_HOME}/spell_words.txt.in ${SPELL_DICTIONARY_FILE} COPYONLY)
+    #endif()
 
     # if spellchecker lists any words, either fix that or add into ${CMAKEDOC_SPELL_DICTIONARY_FILE}
     #set(SPELL_CMD "find . -type f -name ${SPELL_FILE_TYPE} ${FIND_SPELL_EXCLUDE} -exec cat {} \; | ${ASPELL_APP} list -H -p ${CMAKEDOC_SPELL_DICTIONARY_FILE} || { echo 'Error: Aspell failed. Exiting script.'; exit 1; }  | sort | uniq | while read -r word; do grep -r ${GREP_SPELL_EXCLUDE} -n -m 1  \"\$word\" ${CMAKE_SOURCE_DIR}; echo \"when looking for $word\"; done")
@@ -177,7 +186,11 @@ function (add_spellcheck MAIN_TARGET)
     )
 
     if(NOT TARGET doxy)
-         add_custom_target(doxy)
+        if(NOT TARGET ${CMAKEDOC_TARGET})
+            message(FATAL_ERROR "Target not found ${CMAKEDOC_TARGET}")
+        endif()    
+        add_custom_target(doxy)
+        add_dependencies(${CMAKEDOC_TARGET} doxy)        
     endif()
 
     add_dependencies(doxy_spell_bin doxy_spell_dict)
