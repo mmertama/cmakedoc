@@ -1,0 +1,15 @@
+#!/bin/bash
+
+input_file=$1
+output_file=$2
+
+# Loop through each line in the input file
+while IFS= read -r line; do
+    # Trim leading and trailing whitespace from the line
+    trimmed_line="${line}" # initialize the trimmed line
+    trimmed_line="${trimmed_line#"${trimmed_line%%[![:space:]]*}"}"   # remove leading whitespace
+    trimmed_line="${trimmed_line%"${trimmed_line##*[![:space:]]}"}"   # remove trailing whitespace
+
+    # Append the trimmed line to the output file
+    echo "$trimmed_line" >> "$output_file"
+done < "$input_file"

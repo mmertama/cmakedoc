@@ -1,17 +1,20 @@
+
+set(CMAKEDOC_HOME ${CMAKE_CURRENT_LIST_DIR})
+
 function (add_doxygen MAIN_TARGET)
 
-    find_program(DOCX doxygen)
-    if(NOT DOCX)
+    find_program(DOCX_APP doxygen)
+    if(NOT DOCX_APP)
         message(FATAL_ERROR "Doxygen is not found - try apt-get install doxygen")
     endif()
 
-    find_program(GRPHZ dot)
-    if(NOT GRPHZ)
+    find_program(GRPHZ_APP dot)
+    if(NOT GRPHZ_APP)
         message(FATAL_ERROR "graphviz for doxygen is not found - try apt-get install graphviz")
     endif()
 
-    find_program(SPELL aspell)
-    if(NOT SPELL)
+    find_program(ASPELL_APP aspell)
+    if(NOT ASPELL_APP)
         message(FATAL_ERROR "aspell for doxygen is not found - try apt-get install aspell")
     endif()
 
@@ -81,22 +84,35 @@ function (add_doxygen MAIN_TARGET)
 endfunction()
 
 function (add_spellcheck MAIN_TARGET)
+
+    if(NOT DEFINED CMAKEDOC_SPELL_DICTIONARY)
+        message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY ${CMAKEDOC_SPELL_DICTIONARY} file is not defined! - please define!")
+    endif()    
+
+    if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY})
+        find_file(FF ${CMAKEDOC_SPELL_DICTIONARY} HINTS ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} REQUIRED)
+        set(CMAKEDOC_SPELL_DICTIONARY ${FF})
+        if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY})
+            message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY, ${CMAKEDOC_SPELL_DICTIONARY} file does not exists! - please create!")
+        endif()    
+    endif()    
     
-    set(SPELL_EXCLUDE_DIRS 
+    set(GREP_SPELL_EXCLUDE_DIRS 
         aspell
         .git
     )
-    set(SPELL_EXCLUDE_FILES 
+    set(GREP_SPELL_EXCLUDE_FILES 
         doxygen.cmake
         graph_legend.html
         jquery.js
-        \*.png
-        \*.ttf
-        \*.svg
-        \*.jpg
+        *.png
+        *.ttf
+        *.svg
+        *.jpg
+        *.js
     )
 
-    set(SPELL_EXCLUDE_FILES_INTERNAL 
+    set(FIND_SPELL_EXCLUDE_FILES_INTERNAL 
         doxygen.cmake
         graph_legend.html
         \*.png
@@ -107,12 +123,12 @@ function (add_spellcheck MAIN_TARGET)
     )
 
     
-    foreach(DE ${SPELL_EXCLUDE_DIRS})
+    foreach(DE ${GREP_SPELL_EXCLUDE_DIRS})
         set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude-dir=${DE} ")
     endforeach()
     
-    foreach(FE ${SPELL_EXCLUDE_FILES})
-        set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude-dir=${FE} ")
+    foreach(FE ${GREP_SPELL_EXCLUDE_FILES})
+        set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude=${FE} ")
     endforeach()
     
     foreach(DE ${CMAKEDOC_SPELL_EXCLUDE_DIRS})
@@ -123,45 +139,31 @@ function (add_spellcheck MAIN_TARGET)
         set(GREP_SPELL_EXCLUDE "${GREP_SPELL_EXCLUDE} --exclude=${FE} ")
     endforeach()
 
-    foreach(FE ${SPELL_EXCLUDE_FILES_INTERNAL})
+    foreach(FE ${FIND_SPELL_EXCLUDE_FILES_INTERNAL})
         set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -name '${FE}' ")
     endforeach()
 
-    if(FALSE) # todo in later versions if there is need to look beyond doxygendocs
-
-    foreach(DE ${SPELL_EXCLUDE_DIRS})
-        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -path '*/${DE}/*' ")
-    endforeach()
-
-    foreach(FE ${SPELL_EXCLUDE_FILES})
-        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -name '${FE}' ")
-    endforeach()
-    
-    foreach(DE ${CMAKEDOC_SPELL_EXCLUDE_DIRS})
-        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -path '*/${DE}/*' ")
-    endforeach()
-
-    foreach(FE ${CMAKEDOC_SPELL_EXCLUDE_FILES})
-        set(FIND_SPELL_EXCLUDE "${FIND_SPELL_EXCLUDE} ! -name '${FE}' ")
-    endforeach()
-    endif()
-
-    set(SPELL_FILE_TYPE '*.html')
-    
+    set(SPELL_FILE_TYPE *.html) 
+    set(DOXYGEN_HTML_OUTPUT            ${CMAKE_BINARY_DIR}/html)
     set(CMAKEDOC_SPELL_WORKING_FOLDER "${CMAKE_BINARY_DIR}/html")
-    set(CMAKEDOC_SPELL_DICTIONARY_FOLDER "${CMAKE_SOURCE_DIR}/aspell")
-    set(CMAKEDOC_SPELL_DICTIONARY_FILE "${CMAKEDOC_SPELL_DICTIONARY_FOLDER}/spell_words.txt")
-    file(MAKE_DIRECTORY ${CMAKEDOC_SPELL_DICTIONARY_FOLDER})
-    if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY_FILE} )
-        file(WRITE ${CMAKEDOC_SPELL_DICTIONARY_FILE}  "personal_ws-1.1 en 84 utf-8\nforwhich\nPrivateBase\nProtectedBase\nPublicBase\nTempl\nusedClass")
+    set(SPELL_DICTIONARY_FOLDER "${CMAKE_BINARY_DIR}/aspell")
+    set(SPELL_DICTIONARY_FILE "${SPELL_DICTIONARY_FOLDER}/spell_words.txt")
+    file(MAKE_DIRECTORY ${SPELL_DICTIONARY_FOLDER})
+
+    if(NOT EXISTS ${SPELL_DICTIONARY_FILE} )
+        configure_file(${CMAKEDOC_HOME}/spell_words.txt.in ${SPELL_DICTIONARY_FILE} COPYONLY)
     endif()
+
     # if spellchecker lists any words, either fix that or add into ${CMAKEDOC_SPELL_DICTIONARY_FILE}
-    set(SPELL_CMD "find . -type f -name ${SPELL_FILE_TYPE} ${FIND_SPELL_EXCLUDE} -exec cat {} \; | ${SPELL} list -H -p ${CMAKEDOC_SPELL_DICTIONARY_FILE} | sort | uniq | while read -r word; do grep -r ${GREP_SPELL_EXCLUDE} -n -m 1  \"\$word\" ${CMAKE_SOURCE_DIR}; echo \"when looking for $word\"; done")
+    #set(SPELL_CMD "find . -type f -name ${SPELL_FILE_TYPE} ${FIND_SPELL_EXCLUDE} -exec cat {} \; | ${ASPELL_APP} list -H -p ${CMAKEDOC_SPELL_DICTIONARY_FILE} || { echo 'Error: Aspell failed. Exiting script.'; exit 1; }  | sort | uniq | while read -r word; do grep -r ${GREP_SPELL_EXCLUDE} -n -m 1  \"\$word\" ${CMAKE_SOURCE_DIR}; echo \"when looking for $word\"; done")
+    set(SPELL_CMD "${CMAKEDOC_HOME}/dospell.sh \"${DOXYGEN_HTML_OUTPUT}\" \"${CMAKE_SOURCE_DIR}\" \"${SPELL_DICTIONARY_FILE}\" \"${SPELL_FILE_TYPE}\" \"${FIND_SPELL_EXCLUDE}\" \"${ASPELL_APP}\" \"${GREP_SPELL_EXCLUDE}\"")
+
     set(SPELL_CMD_TEST_0 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then echo Spelling errors:; fi")
     set(SPELL_CMD_TEST_1 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then exit 1; fi")
     
     add_custom_target(doxy_spell_bin
         COMMAND bash -c "${SPELL_CMD_TEST_0}"
+        
         COMMAND bash -c "${SPELL_CMD}"
         COMMAND bash -c "${SPELL_CMD_TEST_1}"
         COMMAND echo ""
@@ -169,10 +171,16 @@ function (add_spellcheck MAIN_TARGET)
         VERBATIM
     )
 
+    add_custom_target(doxy_spell_dict
+        COMMAND ${CMAKEDOC_HOME}/doaddtrim.sh ${CMAKEDOC_SPELL_DICTIONARY} ${SPELL_DICTIONARY_FILE}
+        DEPENDS ${CMAKEDOC_SPELL_DICTIONARY}
+    )
 
     if(NOT TARGET doxy)
          add_custom_target(doxy)
     endif()
+
+    add_dependencies(doxy_spell_bin doxy_spell_dict)
     add_dependencies(doxy doxy_spell_bin)
 
     if(TARGET doxy_docs)

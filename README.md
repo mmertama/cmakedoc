@@ -7,7 +7,7 @@ Utility to add doxygen and spell checker into a cmake project.
 * graphviz
 
 ### add_doxygen(${PROJECT_NAME})
-Adds Doxygen in the project. Doxygen documentation will be in the documenation appears in ${CMAKE_BINARY_DIR}/html.
+Adds Doxygen in the project. Doxygen documentation will be in the documentation appears in ${CMAKE_BINARY_DIR}/html.
 #### variables
 * CMAKEDOC_DOXYGEN_DOCUMENTS
     * List files to document.
@@ -15,20 +15,20 @@ Adds Doxygen in the project. Doxygen documentation will be in the documenation a
     * [See e.g.](https://r2devops.io/marketplace/gitlab/r2devops/hub/doxygen)
 
 ### add_spellcheck(${PROJECT_NAME})
-Adds spellcheker in the project. The add_doxygen generated files are spellchecked. Gerates a 'aspell/spell_words.txt' in the project directory to add a project spesific words. Spelling error is a build error. 
-
+Adds spellchecker in the project. The add_doxygen generated files are spellchecked.
 On error the build error looks like 
 
 ```
 Spelling errors:
+looking for fengine:
 /home/markus/Development/FigmaQML/app_figma/FigmaQmlInterface/FigmaQmlInterface.hpp:26:     * @brief Static to fetch this instance from fengine
-when looking for fengine
+
 
 ```
 
-Which tells the mispelled word and it's location. If there is an error you either fix spelling or add the word in the aspell/spell_words.txt file. 
+Which tells the misspelled word and it's location. If there is an error you either fix spelling or add the word in the dictionary file. 
 
-The spellcheck is done only againts doxygen documentation, but the used (misspelled) words are searched from the source folder. Hence the CMAKEDOC_SPELL_EXCLUDE_FILES and CMAKEDOC_SPELL_EXCLUDE_DIRS only affects to where misspelled words are looked for, not what files are actually
+The spellcheck is done only against doxygen documentation, but the used (misspelled) words are searched from the source folder. Hence the CMAKEDOC_SPELL_EXCLUDE_FILES and CMAKEDOC_SPELL_EXCLUDE_DIRS only affects to where misspelled words are looked for, not what files are actually
 processed.
 
 #### variables 
@@ -36,6 +36,8 @@ processed.
     * Files to exclude.
 * CMAKEDOC_SPELL_EXCLUDE_DIRS
     * Directories to exclude.
+* CMAKEDOC_SPELL_DICTIONARY
+    * Dictionary file to use.    
 
 ## Example
 
@@ -92,7 +94,7 @@ if(LINUX AND NOT NO_DOC)
         \*.qmlproject*)
         
 # Add spellchecker in the project
-        
+    set(CMAKEDOC_SPELL_DICTIONARY "spell_dictionary.txt")
     add_spellcheck(${PROJECT_NAME})
 endif()
 ```
