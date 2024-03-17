@@ -172,7 +172,7 @@ function (add_spellcheck MAIN_TARGET)
     )
 
     add_custom_target(doxy_spell_dict
-        COMMAND ${CMAKEDOC_HOME}/doaddtrim.sh ${CMAKEDOC_SPELL_DICTIONARY} ${SPELL_DICTIONARY_FILE}
+        COMMAND ${CMAKEDOC_HOME}/doaddtrim.sh "${CMAKEDOC_SPELL_DICTIONARY}" "${SPELL_DICTIONARY_FILE}" "${CMAKEDOC_HOME}/spell_words.txt.in"
         DEPENDS ${CMAKEDOC_SPELL_DICTIONARY}
     )
 
