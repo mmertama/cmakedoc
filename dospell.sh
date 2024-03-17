@@ -47,5 +47,6 @@ for word in "${sorted_output[@]}"; do
     echo "Looking for $word:"
     if ! grep -r "${grep_exclude[@]}" -n -m 1 "$word" "$grep_directory"; then
         echo "not found $word"
-    fi    
+    fi
+    echo "Fix '$word' or add into dictionary!"    
 done

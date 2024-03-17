@@ -1,7 +1,7 @@
 
 set(CMAKEDOC_HOME ${CMAKE_CURRENT_LIST_DIR})
 
-function (add_doxygen)
+function (add_doxygen CMAKEDOC_TARGET)
 
     find_program(DOCX_APP doxygen)
     if(NOT DOCX_APP)
@@ -72,12 +72,11 @@ function (add_doxygen)
             ${CMAKE_CURRENT_SOURCE_DIR}/.)
     endif()
 
-    if(NOT TARGET doxy)
-        add_custom_target(doxy)
+    if(NOT TARGET cmakedoc)
+        add_custom_target(cmakedoc)
     endif()
 
-    add_dependencies(doxy doxy_docs)
-
+    add_dependencies(cmakedoc doxy_docs)
 
     if(TARGET doxy_spell)
         add_dependencies(doxy_spell doxy_docs)
@@ -87,11 +86,11 @@ function (add_doxygen)
         message(FATAL_ERROR "Target not found ${CMAKEDOC_TARGET}")
     endif()  
 
-    add_dependencies(${CMAKEDOC_TARGET} doxy)  
-
+    add_dependencies(${CMAKEDOC_TARGET} cmakedoc)
+  
 endfunction()
 
-function (add_spellcheck)
+function (add_spellcheck CMAKEDOC_TARGET)
 
     if(NOT DEFINED CMAKEDOC_SPELL_DICTIONARY)
         message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY ${CMAKEDOC_SPELL_DICTIONARY} file is not defined! - please define!")
@@ -170,31 +169,34 @@ function (add_spellcheck)
     set(SPELL_CMD_TEST_0 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then echo Spelling errors:; fi")
     set(SPELL_CMD_TEST_1 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then exit 1; fi")
     
+    add_custom_command(OUTPUT "${SPELL_DICTIONARY_FILE}"
+        COMMAND ${CMAKEDOC_HOME}/doaddtrim.sh "${CMAKEDOC_SPELL_DICTIONARY}" "${SPELL_DICTIONARY_FILE}" "${CMAKEDOC_HOME}/spell_words.txt.in"
+        DEPENDS ${CMAKEDOC_SPELL_DICTIONARY}
+        COMMENT Update dictionary
+    )
+
+
     add_custom_target(doxy_spell_bin
         COMMAND bash -c "${SPELL_CMD_TEST_0}"
-        
         COMMAND bash -c "${SPELL_CMD}"
         COMMAND bash -c "${SPELL_CMD_TEST_1}"
         COMMAND echo ""
+        COMMENT Spellchecking
+        DEPENDS "${SPELL_DICTIONARY_FILE}" "${CMAKEDOC_SPELL_DICTIONARY}"
         WORKING_DIRECTORY "${CMAKEDOC_SPELL_WORKING_FOLDER}"
         VERBATIM
     )
 
-    add_custom_target(doxy_spell_dict
-        COMMAND ${CMAKEDOC_HOME}/doaddtrim.sh "${CMAKEDOC_SPELL_DICTIONARY}" "${SPELL_DICTIONARY_FILE}" "${CMAKEDOC_HOME}/spell_words.txt.in"
-        DEPENDS ${CMAKEDOC_SPELL_DICTIONARY}
-    )
 
-    if(NOT TARGET doxy)
+    if(NOT TARGET cmakedoc)
         if(NOT TARGET ${CMAKEDOC_TARGET})
             message(FATAL_ERROR "Target not found ${CMAKEDOC_TARGET}")
         endif()    
-        add_custom_target(doxy)
-        add_dependencies(${CMAKEDOC_TARGET} doxy)        
+        add_custom_target(cmakedoc)
+        add_dependencies(${CMAKEDOC_TARGET} cmakedoc)
     endif()
 
-    add_dependencies(doxy_spell_bin doxy_spell_dict)
-    add_dependencies(doxy doxy_spell_bin)
+    add_dependencies(cmakedoc doxy_spell_bin)
 
     if(TARGET doxy_docs)
         add_dependencies(doxy_spell_bin doxy_docs)
