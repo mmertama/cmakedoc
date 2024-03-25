@@ -4,6 +4,8 @@
 set -e
 #set -x 
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 spell_directory=$1
 
 grep_directory=$2
@@ -17,6 +19,8 @@ IFS=' ' read -r -a spell_file_exclude <<< "$5"
 spell_command=$6
 
 IFS=' ' read -r -a grep_exclude <<< "$7"
+
+spell_config=$8
 
 # Clean up spell_words.txt file (remove trailing whitespace or other invalid characters)
 # Open spell_words.txt in a text editor and manually remove any invalid characters from each word
@@ -32,12 +36,9 @@ for file in "${files[@]}"; do
     # Collect output of aspell into the aspell_output array
     while IFS= read -r line; do
         aspell_output+=("$line")
-    done < <($spell_command list -H -p "$spell_words_file" < "$file" || { echo "Error: Spelling failed. Exiting script."; exit 1; })
+    # -H is HTML mode as doxygen provides HTML, -p personal dict    
+    done < <($spell_command list --conf="$spell_config" -H -p "$spell_words_file" --extra-dicts=$SCRIPT_DIR/cplusplus.txt < "$file" || { echo "Error: Spelling failed. Exiting script."; exit 1; })
 
-    #$spell_command list -H -p "$spell_words_file" < "$file" || { echo "Error: Spelling failed. Exiting script."; exit 1; } | sort | uniq | while read -r word; do
-    #    grep -r "${grep_exclude[@]}" -n -m 1 "$word" "$directory"
-    #    echo "When looking for $word in $file"
-    #done
 done
 
 sorted_output=($(printf "%s\n" "${aspell_output[@]}" | sort -u))

@@ -37,7 +37,9 @@ processed.
 * CMAKEDOC_SPELL_EXCLUDE_DIRS
     * Directories to exclude.
 * CMAKEDOC_SPELL_DICTIONARY
-    * Dictionary file to use.    
+    * Dictionary file to use.
+* CMAKEDOC_SPELL_CONFIG
+    * Config file to override (if needed).    
 
 ## Example
 

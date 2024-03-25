@@ -94,7 +94,15 @@ function (add_spellcheck CMAKEDOC_TARGET)
 
     if(NOT DEFINED CMAKEDOC_SPELL_DICTIONARY)
         message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY ${CMAKEDOC_SPELL_DICTIONARY} file is not defined! - please define!")
-    endif()    
+    endif()  
+    
+    if(NOT DEFINED CMAKEDOC_SPELL_CONFIG)
+        set(CMAKEDOC_SPELL_CONFIG ${CMAKEDOC_HOME}/aspell.conf)
+    endif()
+    
+    if(NOT EXISTS ${CMAKEDOC_SPELL_CONFIG})
+        file(COPY_FILE ${CMAKEDOC_HOME}/aspell.conf ${CMAKEDOC_SPELL_CONFIG})
+    endif()
 
     if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY})
         find_file(FF ${CMAKEDOC_SPELL_DICTIONARY} HINTS ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} REQUIRED)
@@ -164,7 +172,7 @@ function (add_spellcheck CMAKEDOC_TARGET)
 
     # if spellchecker lists any words, either fix that or add into ${CMAKEDOC_SPELL_DICTIONARY_FILE}
     #set(SPELL_CMD "find . -type f -name ${SPELL_FILE_TYPE} ${FIND_SPELL_EXCLUDE} -exec cat {} \; | ${ASPELL_APP} list -H -p ${CMAKEDOC_SPELL_DICTIONARY_FILE} || { echo 'Error: Aspell failed. Exiting script.'; exit 1; }  | sort | uniq | while read -r word; do grep -r ${GREP_SPELL_EXCLUDE} -n -m 1  \"\$word\" ${CMAKE_SOURCE_DIR}; echo \"when looking for $word\"; done")
-    set(SPELL_CMD "${CMAKEDOC_HOME}/dospell.sh \"${DOXYGEN_HTML_OUTPUT}\" \"${CMAKE_SOURCE_DIR}\" \"${SPELL_DICTIONARY_FILE}\" \"${SPELL_FILE_TYPE}\" \"${FIND_SPELL_EXCLUDE}\" \"${ASPELL_APP}\" \"${GREP_SPELL_EXCLUDE}\"")
+    set(SPELL_CMD "${CMAKEDOC_HOME}/dospell.sh \"${DOXYGEN_HTML_OUTPUT}\" \"${CMAKE_SOURCE_DIR}\" \"${SPELL_DICTIONARY_FILE}\" \"${SPELL_FILE_TYPE}\" \"${FIND_SPELL_EXCLUDE}\" \"${ASPELL_APP}\" \"${GREP_SPELL_EXCLUDE}\" \"${CMAKEDOC_SPELL_CONFIG}\"")
 
     set(SPELL_CMD_TEST_0 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then echo Spelling errors:; fi")
     set(SPELL_CMD_TEST_1 "if [[ $( ${SPELL_CMD} | wc -l) -ne 0 ]]; then exit 1; fi")
@@ -182,7 +190,7 @@ function (add_spellcheck CMAKEDOC_TARGET)
         COMMAND bash -c "${SPELL_CMD_TEST_1}"
         COMMAND echo ""
         COMMENT Spellchecking
-        DEPENDS "${SPELL_DICTIONARY_FILE}" "${CMAKEDOC_SPELL_DICTIONARY}"
+        DEPENDS "${SPELL_DICTIONARY_FILE}" "${CMAKEDOC_SPELL_DICTIONARY}" "${CMAKEDOC_SPELL_CONFIG}"
         WORKING_DIRECTORY "${CMAKEDOC_SPELL_WORKING_FOLDER}"
         VERBATIM
     )
