@@ -39,7 +39,7 @@ processed.
 * CMAKEDOC_SPELL_DICTIONARY
     * Dictionary file to use.
 * CMAKEDOC_SPELL_CONFIG
-    * Config file to override (if needed).    
+    * Config file to override (if needed) - see aspell documentation.    
 
 ## Example
 
@@ -79,7 +79,7 @@ if(LINUX AND NOT NO_DOC)
     add_doxygen(${PROJECT_NAME})
 
 
-# Excude folders you do not want to be spellchecked     
+# Exclude folders you do not want to be spellchecked     
 
     set(CMAKEDOC_SPELL_EXCLUDE_DIRS
         build
@@ -90,7 +90,7 @@ if(LINUX AND NOT NO_DOC)
         FigmaQML
         OpenSSL*)
 
-# Excude files you do not want to be spellchecked        
+# Exclude files you do not want to be spellchecked        
         
     set(CMAKEDOC_SPELL_EXCLUDE_FILES
         \*.qmlproject*)
