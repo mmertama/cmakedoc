@@ -102,17 +102,19 @@ function (add_spellcheck CMAKEDOC_TARGET)
     if(NOT EXISTS ${CMAKEDOC_SPELL_CONFIG})
         file(COPY_FILE ${CMAKEDOC_HOME}/aspell.conf ${CMAKEDOC_SPELL_CONFIG})
     endif()
-
+    set(DICT_SEARCH
+        "${CMAKE_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/.."
+        "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+    )
     if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY})
         get_filename_component(DICT_BASENAME "${CMAKEDOC_SPELL_DICTIONARY}" NAME)
-        find_file(FALLBACK_DICT "${DICT_BASENAME}" HINTS
-            "${CMAKE_SOURCE_DIR}"
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${CMAKE_CURRENT_SOURCE_DIR}/.."
-            "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+        find_file(FALLBACK_DICT "${DICT_BASENAME}" PATHS
+            §{DICT_SEARCH}
             PATH_SUFFIXES aspell spell src)
         if(NOT ${FALLBACK_DICT})
-            message("Looked ${DICT_BASENAME} from  ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ")
+            message("Looked ${DICT_BASENAME} from ${DICT_SEARCH} ")
             message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY, ${CMAKEDOC_SPELL_DICTIONARY} file does not exists! - please create!")
         endif()    
         set(CMAKEDOC_SPELL_DICTIONARY ${FALLBACK_DICT})
