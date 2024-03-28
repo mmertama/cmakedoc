@@ -1,6 +1,6 @@
 
 set(CMAKEDOC_HOME ${CMAKE_CURRENT_LIST_DIR})
-
+cmake_minimum_required (VERSION 3.20)
 function (add_doxygen CMAKEDOC_TARGET)
 
     find_program(DOCX_APP doxygen)
@@ -107,9 +107,13 @@ function (add_spellcheck CMAKEDOC_TARGET)
     if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY})
         find_file(FALLBACK_DICT ${CMAKEDOC_SPELL_DICTIONARY} HINTS ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} PATH_SUFFIXES aspell spell src)
         if(NOT ${FALLBACK_DICT})
-            message("Looked ${CMAKEDOC_SPELL_DICTIONARY} from  ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ")
-            message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY, ${CMAKEDOC_SPELL_DICTIONARY} file does not exists! - please create!")
-        endif()
+            cmake_path(GET ${CMAKEDOC_SPELL_DICTIONARY} FILENAME DICT_BASENAME)
+            find_file(FALLBACK_DICT ${DICT_BASENAME} HINTS ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} PATH_SUFFIXES aspell spell src)
+            if(NOT ${FALLBACK_DICT})
+                message("Looked ${CMAKEDOC_SPELL_DICTIONARY} and  ${DICT_BASENAME} from  ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ")
+                message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY, ${CMAKEDOC_SPELL_DICTIONARY} file does not exists! - please create!")
+            endif()
+        endif()    
         set(CMAKEDOC_SPELL_DICTIONARY ${FALLBACK_DICT})
     endif()    
     
