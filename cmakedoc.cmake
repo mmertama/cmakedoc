@@ -114,6 +114,8 @@ function (add_spellcheck CMAKEDOC_TARGET)
             §{DICT_SEARCH}
             PATH_SUFFIXES aspell spell src)
         if(NOT ${FALLBACK_DICT})
+            file(GLOB_RECURSE FOO LIST_DIRECTORIES TRUE ${CMAKE_CURRENT_SOURCE_DIR}/../*)
+            message("globs ${FOO}")
             message("Looked ${DICT_BASENAME} from ${DICT_SEARCH} ")
             message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY, ${CMAKEDOC_SPELL_DICTIONARY} file does not exists! - please create!")
         endif()    
