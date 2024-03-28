@@ -1,8 +1,7 @@
 
 set(CMAKEDOC_HOME ${CMAKE_CURRENT_LIST_DIR})
-cmake_minimum_required (VERSION 3.20)
 function (add_doxygen CMAKEDOC_TARGET)
-
+    cmake_minimum_required (VERSION 3.20)
     find_program(DOCX_APP doxygen)
     if(NOT DOCX_APP)
         message(FATAL_ERROR "Doxygen is not found - try apt-get install doxygen")
@@ -91,7 +90,7 @@ function (add_doxygen CMAKEDOC_TARGET)
 endfunction()
 
 function (add_spellcheck CMAKEDOC_TARGET)
-
+    cmake_minimum_required (VERSION 3.20)
     if(NOT DEFINED CMAKEDOC_SPELL_DICTIONARY)
         message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY ${CMAKEDOC_SPELL_DICTIONARY} file is not defined! - please define!")
     endif()  
