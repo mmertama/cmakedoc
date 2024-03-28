@@ -105,7 +105,12 @@ function (add_spellcheck CMAKEDOC_TARGET)
 
     if(NOT EXISTS ${CMAKEDOC_SPELL_DICTIONARY})
         get_filename_component(DICT_BASENAME "${CMAKEDOC_SPELL_DICTIONARY}" NAME)
-        find_file(FALLBACK_DICT "${DICT_BASENAME}" HINTS "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" PATH_SUFFIXES aspell spell src)
+        find_file(FALLBACK_DICT "${DICT_BASENAME}" HINTS
+            "${CMAKE_SOURCE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/.."
+            "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+            PATH_SUFFIXES aspell spell src)
         if(NOT ${FALLBACK_DICT})
             message("Looked ${DICT_BASENAME} from  ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ")
             message(FATAL_ERROR "CMAKEDOC_SPELL_DICTIONARY, ${CMAKEDOC_SPELL_DICTIONARY} file does not exists! - please create!")
